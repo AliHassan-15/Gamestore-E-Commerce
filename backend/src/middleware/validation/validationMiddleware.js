@@ -159,6 +159,28 @@ const schemas = {
     is_default: Joi.boolean().default(false),
     phone: Joi.string().max(20).optional(),
     label: Joi.string().max(50).optional()
+  }),
+
+  // Inventory validation
+  inventory: Joi.object({
+    product_id: Joi.number().integer().positive().required().messages({
+      'any.required': 'Product ID is required',
+      'number.positive': 'Product ID must be positive'
+    }),
+    quantity: Joi.number().integer().required().messages({
+      'any.required': 'Quantity is required',
+      'number.integer': 'Quantity must be an integer'
+    }),
+    unit_cost: Joi.number().precision(2).min(0).optional().messages({
+      'number.precision': 'Unit cost must have maximum 2 decimal places',
+      'number.min': 'Unit cost cannot be negative'
+    }),
+    notes: Joi.string().max(500).optional().messages({
+      'string.max': 'Notes cannot exceed 500 characters'
+    }),
+    reason: Joi.string().max(500).optional().messages({
+      'string.max': 'Reason cannot exceed 500 characters'
+    })
   })
 };
 
@@ -204,6 +226,7 @@ const validateOrder = validate('order');
 const validateCartItem = validate('cartItem');
 const validateReview = validate('review');
 const validateAddress = validate('address');
+const validateInventory = validate('inventory');
 
 module.exports = {
   validate,
@@ -215,5 +238,6 @@ module.exports = {
   validateCartItem,
   validateReview,
   validateAddress,
+  validateInventory,
   schemas
 }; 

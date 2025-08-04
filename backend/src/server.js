@@ -15,6 +15,15 @@ const { initializePassport } = require('./config/passport');
 // Import database connection
 const { sequelize } = require('./config/database/config');
 
+// Import Redis configuration
+const { client: redisClient } = require('./config/redis/config');
+
+// Import background services
+const { orderProcessingService } = require('./services/background/orderProcessingService');
+
+// Import cache middleware
+const { warmupCache } = require('./middleware/cache/redisCache');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
@@ -24,6 +33,7 @@ const cartRoutes = require('./routes/cart');
 const reviewRoutes = require('./routes/reviews');
 const adminRoutes = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
+const inventoryRoutes = require('./routes/inventory');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorMiddleware');
@@ -108,6 +118,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -133,11 +144,19 @@ const startServer = async () => {
       logger.info('Database synced successfully.');
     }
     
+    // Start background services
+    orderProcessingService.start();
+    logger.info('Background services started successfully.');
+    
+    // Warm up cache
+    await warmupCache();
+    
     // Start server
     app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV}`);
       logger.info(`Health check: http://localhost:${PORT}/health`);
+      logger.info('Redis cache and background services are active');
     });
   } catch (error) {
     logger.error('Unable to start server:', error);

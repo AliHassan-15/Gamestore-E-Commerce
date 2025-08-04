@@ -10,6 +10,7 @@ const Subcategory = require('./Subcategory');
 const Product = require('./Product');
 const ProductImage = require('./ProductImage');
 const StockLog = require('./StockLog');
+const InventoryTransaction = require('./InventoryTransaction');
 const CartItem = require('./CartItem');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
@@ -62,6 +63,9 @@ ProductImage.belongsTo(Product, { foreignKey: 'product_id' });
 Product.hasMany(StockLog, { foreignKey: 'product_id', as: 'stockLogs' });
 StockLog.belongsTo(Product, { foreignKey: 'product_id' });
 
+Product.hasMany(InventoryTransaction, { foreignKey: 'product_id', as: 'inventoryTransactions' });
+InventoryTransaction.belongsTo(Product, { foreignKey: 'product_id' });
+
 Product.hasMany(CartItem, { foreignKey: 'product_id', as: 'cartItems' });
 CartItem.belongsTo(Product, { foreignKey: 'product_id' });
 
@@ -88,6 +92,9 @@ Review.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 // StockLog associations
 StockLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// InventoryTransaction associations
+InventoryTransaction.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 module.exports = {
   sequelize,
   User,
@@ -99,6 +106,7 @@ module.exports = {
   Product,
   ProductImage,
   StockLog,
+  InventoryTransaction,
   CartItem,
   Order,
   OrderItem,

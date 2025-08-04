@@ -167,6 +167,29 @@ const reviewController = {
         });
       }
 
+      // Verify user has purchased and received the product
+      const { Order, OrderItem } = require('../../models');
+      const userOrder = await Order.findOne({
+        where: {
+          user_id: userId,
+          status: 'delivered'
+        },
+        include: [
+          {
+            model: OrderItem,
+            as: 'items',
+            where: { product_id }
+          }
+        ]
+      });
+
+      if (!userOrder) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only review products you have purchased and received'
+        });
+      }
+
       // Validate rating
       if (rating < 1 || rating > 5) {
         return res.status(400).json({
@@ -181,6 +204,7 @@ const reviewController = {
         rating,
         title,
         comment,
+        order_id: userOrder.id, // Link to the order
         is_approved: true, // Auto-approve for now
         is_active: true
       });
