@@ -1,0 +1,1 @@
+// Product list component - will be implemented later 

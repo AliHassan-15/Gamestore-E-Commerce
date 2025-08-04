@@ -1,0 +1,1 @@
+// Product card component - will be implemented later 

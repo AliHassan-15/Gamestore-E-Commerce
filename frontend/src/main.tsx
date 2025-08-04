@@ -1,0 +1,1 @@
+// Main React entry point - will be implemented later 

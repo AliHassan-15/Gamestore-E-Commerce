@@ -1,0 +1,1 @@
+// Sequelize models index - will be implemented later 

@@ -1,0 +1,1 @@
+// TypeScript API types - will be implemented later 

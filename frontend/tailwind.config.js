@@ -1,0 +1,1 @@
+// Tailwind CSS configuration - will be implemented later 

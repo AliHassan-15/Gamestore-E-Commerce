@@ -1,0 +1,1 @@
+// Footer layout component - will be implemented later 

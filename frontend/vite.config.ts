@@ -1,0 +1,1 @@
+// Vite configuration - will be implemented later 

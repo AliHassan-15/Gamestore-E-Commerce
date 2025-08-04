@@ -1,0 +1,1 @@
+// Product management page component - will be implemented later 

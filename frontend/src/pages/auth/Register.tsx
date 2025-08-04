@@ -1,0 +1,1 @@
+// Register page component - will be implemented later 

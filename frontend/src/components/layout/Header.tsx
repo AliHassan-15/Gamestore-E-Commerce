@@ -1,0 +1,1 @@
+// Header layout component - will be implemented later 
