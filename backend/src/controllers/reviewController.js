@@ -6,13 +6,13 @@ const reviewController = {
   // Get reviews for a product
   getProductReviews: async (req, res) => {
     try {
-      const { product_id } = req.params;
+      const { product_id: productId } = req.params;
       const { page = 1, limit = 10, sort = 'newest' } = req.query;
 
       const offset = (page - 1) * limit;
 
       // Validate product exists
-      const product = await Product.findByPk(product_id);
+      const product = await Product.findByPk(productId);
       if (!product) {
         return res.status(404).json({
           success: false,
@@ -32,7 +32,7 @@ const reviewController = {
 
       const reviews = await Review.findAndCountAll({
         where: { 
-          product_id,
+          product_id: productId,
           is_approved: true,
           is_active: true
         },
@@ -58,7 +58,7 @@ const reviewController = {
       // Calculate average rating
       const avgRating = await Review.findOne({
         where: { 
-          product_id,
+          product_id: productId,
           is_approved: true,
           is_active: true
         },

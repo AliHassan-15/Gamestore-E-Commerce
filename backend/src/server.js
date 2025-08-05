@@ -6,6 +6,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const passport = require('passport');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 require('dotenv').config();
 
@@ -34,6 +35,7 @@ const reviewRoutes = require('./routes/reviews');
 const adminRoutes = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
 const inventoryRoutes = require('./routes/inventory');
+const paymentRoutes = require('./routes/payment');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorMiddleware');
@@ -67,6 +69,7 @@ app.use('/api/', limiter);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // Compression middleware
 app.use(compression());
@@ -119,6 +122,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

@@ -32,47 +32,53 @@ passport.use(new LocalStrategy({
   }
 }));
 
-// Google OAuth Strategy
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
-  scope: ['profile', 'email']
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    // Check if user already exists
-    let user = await User.findOne({
-      where: { google_id: profile.id }
-    });
-
-    if (!user) {
-      // Check if user exists with same email
-      user = await User.findOne({
-        where: { email: profile.emails[0].value }
+// Google OAuth Strategy (only initialize if credentials are provided)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+    scope: ['profile', 'email']
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      // Check if user already exists
+      let user = await User.findOne({
+        where: { google_id: profile.id }
       });
 
-      if (user) {
-        // Link Google account to existing user
-        await user.update({ google_id: profile.id });
-      } else {
-        // Create new user
-        user = await User.create({
-          email: profile.emails[0].value,
-          first_name: profile.name.givenName,
-          last_name: profile.name.familyName,
-          google_id: profile.id,
-          email_verified: true, // Google emails are verified
-          password: Math.random().toString(36).slice(-8) // Generate random password
+      if (!user) {
+        // Check if user exists with same email
+        user = await User.findOne({
+          where: { email: profile.emails[0].value }
         });
-      }
-    }
 
-    return done(null, user);
-  } catch (error) {
-    logger.error('Google strategy error:', error);
-    return done(error);
-  }
-}));
+        if (user) {
+          // Link Google account to existing user
+          await user.update({ google_id: profile.id });
+        } else {
+          // Create new user
+          user = await User.create({
+            email: profile.emails[0].value,
+            first_name: profile.name.givenName,
+            last_name: profile.name.familyName,
+            google_id: profile.id,
+            email_verified: true, // Google emails are verified
+            password: Math.random().toString(36).slice(-8) // Generate random password
+          });
+        }
+      }
+
+      return done(null, user);
+    } catch (error) {
+      logger.error('Google strategy error:', error);
+      return done(error);
+    }
+  }));
+  
+  logger.info('Google OAuth strategy initialized');
+} else {
+  logger.warn('Google OAuth credentials not provided - Google OAuth disabled');
+}
 
 // Serialize user for session
 passport.serializeUser((user, done) => {

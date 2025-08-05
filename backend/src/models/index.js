@@ -50,11 +50,11 @@ Category.hasMany(Subcategory, { foreignKey: 'category_id', as: 'subcategories' }
 Subcategory.belongsTo(Category, { foreignKey: 'category_id' });
 
 Category.hasMany(Product, { foreignKey: 'category_id', as: 'products' });
-Product.belongsTo(Category, { foreignKey: 'category_id' });
+Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
 
 // Subcategory associations
 Subcategory.hasMany(Product, { foreignKey: 'subcategory_id', as: 'products' });
-Product.belongsTo(Subcategory, { foreignKey: 'subcategory_id' });
+Product.belongsTo(Subcategory, { foreignKey: 'subcategory_id', as: 'subcategory' });
 
 // Product associations
 Product.hasMany(ProductImage, { foreignKey: 'product_id', as: 'productImages' });
@@ -67,7 +67,7 @@ Product.hasMany(InventoryTransaction, { foreignKey: 'product_id', as: 'inventory
 InventoryTransaction.belongsTo(Product, { foreignKey: 'product_id' });
 
 Product.hasMany(CartItem, { foreignKey: 'product_id', as: 'cartItems' });
-CartItem.belongsTo(Product, { foreignKey: 'product_id' });
+CartItem.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
 Product.hasMany(OrderItem, { foreignKey: 'product_id', as: 'orderItems' });
 OrderItem.belongsTo(Product, { foreignKey: 'product_id' });

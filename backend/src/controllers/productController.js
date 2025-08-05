@@ -57,7 +57,7 @@ const productController = {
         include: [
           { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
           { model: Subcategory, as: 'subcategory', attributes: ['id', 'name', 'slug'] },
-          { model: ProductImage, as: 'images', attributes: ['id', 'image_url', 'is_primary'] }
+          { model: ProductImage, as: 'productImages', attributes: ['id', 'image_url', 'is_primary'] }
         ],
         order: [[finalSortBy, finalSortOrder]],
         limit: parseInt(limit),
@@ -181,7 +181,7 @@ const productController = {
         where: { category_id: category.id, is_active: true },
         include: [
           { model: Subcategory, as: 'subcategory', attributes: ['id', 'name', 'slug'] },
-          { model: ProductImage, as: 'images', attributes: ['id', 'image_url', 'is_primary'] }
+          { model: ProductImage, as: 'productImages', attributes: ['id', 'image_url', 'is_primary'] }
         ],
         order: [['created_at', 'DESC']],
         limit: parseInt(limit),
@@ -233,7 +233,7 @@ const productController = {
         where: { subcategory_id: subcategory.id, is_active: true },
         include: [
           { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
-          { model: ProductImage, as: 'images', attributes: ['id', 'image_url', 'is_primary'] }
+          { model: ProductImage, as: 'productImages', attributes: ['id', 'image_url', 'is_primary'] }
         ],
         order: [['created_at', 'DESC']],
         limit: parseInt(limit),
@@ -277,9 +277,6 @@ const productController = {
           message: 'Product not found'
         });
       }
-
-      // Increment view count (you might want to track this)
-      await product.increment('view_count', { by: 1 });
 
       res.status(200).json({
         success: true,

@@ -25,48 +25,39 @@ const InventoryTransaction = sequelize.define('InventoryTransaction', {
   },
   transaction_type: {
     type: DataTypes.ENUM('IN', 'OUT', 'ADJUSTMENT', 'RETURN'),
-    allowNull: false,
-    comment: 'IN: Stock added, OUT: Stock sold, ADJUSTMENT: Manual adjustment, RETURN: Customer return'
+    allowNull: false
   },
   quantity: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    comment: 'Positive for IN/RETURN, Negative for OUT'
+    allowNull: false
   },
   previous_stock: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    comment: 'Stock level before transaction'
+    allowNull: false
   },
   new_stock: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    comment: 'Stock level after transaction'
+    allowNull: false
   },
   reference_type: {
     type: DataTypes.ENUM('ORDER', 'MANUAL', 'RETURN', 'SYSTEM'),
-    allowNull: false,
-    comment: 'What triggered this transaction'
+    allowNull: false
   },
   reference_id: {
     type: DataTypes.INTEGER,
-    allowNull: true,
-    comment: 'ID of the reference (order_id, etc.)'
+    allowNull: true
   },
   notes: {
     type: DataTypes.TEXT,
-    allowNull: true,
-    comment: 'Additional notes about the transaction'
+    allowNull: true
   },
   unit_cost: {
     type: DataTypes.DECIMAL(10, 2),
-    allowNull: true,
-    comment: 'Cost per unit for inventory valuation'
+    allowNull: true
   },
   total_value: {
     type: DataTypes.DECIMAL(10, 2),
-    allowNull: true,
-    comment: 'Total value of the transaction'
+    allowNull: true
   },
   created_at: {
     type: DataTypes.DATE,

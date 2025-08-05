@@ -1,13 +1,11 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
+// Use connection string if available, otherwise use individual parameters
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'gamestore_db',
-  process.env.DB_USER || process.env.USER || 'qbatch',
-  process.env.DB_PASSWORD || 'password',
+  process.env.DATABASE_URL || 
+  `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || ''}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}/${process.env.DB_NAME || 'gamestore_db'}`,
   {
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {

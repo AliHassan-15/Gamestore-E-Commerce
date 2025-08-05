@@ -24,8 +24,8 @@ router.get('/category/:categorySlug', productController.getProductsByCategory);
 // GET /products/subcategory/:subcategorySlug - Get products by subcategory
 router.get('/subcategory/:subcategorySlug', productController.getProductsBySubcategory);
 
-// GET /products/:slug - Get product by slug
-router.get('/:slug', productController.getProductBySlug);
+// GET /products/slug/:slug - Get product by slug
+router.get('/slug/:slug', productController.getProductBySlug);
 
 // GET /products/:id/reviews - Get product reviews
 router.get('/:id/reviews', productController.getProductReviews);

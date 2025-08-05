@@ -257,7 +257,7 @@ Product.findBySlug = function(slug) {
     include: [
       { model: require('./Category'), as: 'category' },
       { model: require('./Subcategory'), as: 'subcategory' },
-      { model: require('./ProductImage'), as: 'images' }
+      { model: require('./ProductImage'), as: 'productImages' }
     ]
   });
 };

@@ -52,8 +52,9 @@ const orderController = {
 
         orderItems.push({
           product_id: item.product_id,
+          product_name: product.name,
+          product_price: itemTotal,
           quantity: item.quantity,
-          unit_price: itemTotal,
           total_price: itemTotal * item.quantity
         });
       }
@@ -68,9 +69,9 @@ const orderController = {
         order_number: await Order.generateOrderNumber(),
         status: 'pending',
         subtotal,
-        tax,
-        shipping,
-        total,
+        tax_amount: tax,
+        shipping_amount: shipping,
+        total_amount: total,
         shipping_address_id,
         billing_address_id,
         payment_method_id,
@@ -419,7 +420,7 @@ const orderController = {
         });
       }
 
-      if (refund_amount > order.total) {
+      if (refund_amount > order.total_amount) {
         return res.status(400).json({
           success: false,
           message: 'Refund amount cannot exceed order total'
@@ -466,7 +467,7 @@ const orderController = {
       });
 
       // Total revenue
-      const totalRevenue = await Order.sum('total', {
+      const totalRevenue = await Order.sum('total_amount', {
         where: {
           created_at: { [Op.gte]: startDate },
           status: { [Op.in]: ['delivered', 'shipped'] }

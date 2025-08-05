@@ -221,6 +221,12 @@ Order.prototype.isRefundable = function() {
 };
 
 // Class methods
+Order.generateOrderNumber = function() {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9).toUpperCase();
+  return `ORD-${timestamp}-${random}`;
+};
+
 Order.findByOrderNumber = function(orderNumber) {
   return this.findOne({
     where: { order_number: orderNumber },

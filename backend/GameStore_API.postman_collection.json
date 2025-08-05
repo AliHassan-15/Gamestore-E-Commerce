@@ -1,35 +1,15 @@
 {
   "info": {
-    "name": "GameStore API",
-    "description": "Complete API collection for GameStore e-commerce application with authentication, sessions, cookies, Passport Local, and Google OAuth",
+    "name": "GameStore API - Complete Collection",
+    "description": "Complete API collection for GameStore e-commerce platform with all features including Redis, background services, and inventory management",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "gamestore-api-collection"
+    "_postman_id": "gamestore-api-collection",
+    "version": "2.0.0"
   },
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:5000",
-      "type": "string"
-    },
-    {
-      "key": "admin_email",
-      "value": "admin@gamestore.com",
-      "type": "string"
-    },
-    {
-      "key": "admin_password",
-      "value": "admin123",
-      "type": "string"
-    },
-    {
-      "key": "user_email",
-      "value": "user@example.com",
-      "type": "string"
-    },
-    {
-      "key": "user_password",
-      "value": "password123",
-      "type": "string"
+      "value": "http://localhost:5000"
     }
   ],
   "auth": {
@@ -67,42 +47,7 @@
       "name": "🔐 Authentication",
       "item": [
         {
-          "name": "Health Check",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/health",
-              "host": ["{{base_url}}"],
-              "path": ["health"]
-            }
-          }
-        },
-        {
           "name": "Register User",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "pm.test(\"Response has success property\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.eql(true);",
-                  "});",
-                  "",
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set(\"user_id\", jsonData.data.id);",
-                  "    pm.environment.set(\"user_email\", jsonData.data.email);",
-                  "}"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -120,39 +65,25 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "register"]
             }
-          }
-        },
-        {
-          "name": "Login User (Local)",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Response has success property\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.eql(true);",
-                  "});",
-                  "",
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set(\"auth_token\", jsonData.data.token);",
-                  "    pm.environment.set(\"user_id\", jsonData.data.user.id);",
-                  "    ",
-                  "    // Store session cookie if present",
-                  "    var cookies = pm.response.headers.get('Set-Cookie');",
-                  "    if (cookies) {",
-                  "        pm.environment.set(\"session_cookie\", cookies);",
-                  "    }",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('user_id', response.data.user.id);",
+                  "    pm.environment.set('auth_token', response.data.token);",
+                  "    console.log('User registered successfully');",
                   "}"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Login User",
           "request": {
             "method": "POST",
             "header": [
@@ -170,28 +101,26 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
             }
-          }
-        },
-        {
-          "name": "Login Admin",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
                   "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set(\"admin_token\", jsonData.data.token);",
-                  "    pm.environment.set(\"admin_id\", jsonData.data.user.id);",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('auth_token', response.data.token);",
+                  "    pm.environment.set('refresh_token', response.data.refreshToken);",
+                  "    pm.environment.set('session_cookie', pm.cookies.get('connect.sid'));",
+                  "    console.log('User logged in successfully');",
                   "}"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Login Admin",
           "request": {
             "method": "POST",
             "header": [
@@ -209,31 +138,22 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
             }
-          }
-        },
-        {
-          "name": "Google OAuth - Initiate",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/auth/google",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "google"]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('admin_token', response.data.token);",
+                  "    pm.environment.set('admin_id', response.data.user.id);",
+                  "    console.log('Admin logged in successfully');",
+                  "}"
+                ]
+              }
             }
-          }
-        },
-        {
-          "name": "Google OAuth - Callback",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/auth/google/callback",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "google", "callback"]
-            }
-          }
+          ]
         },
         {
           "name": "Get Current User",
@@ -249,27 +169,6 @@
               "raw": "{{base_url}}/api/auth/me",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "me"]
-            }
-          }
-        },
-        {
-          "name": "Refresh Token",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/refresh",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "refresh"]
             }
           }
         },
@@ -301,7 +200,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/products?page=1&limit=10&sort=price_asc",
+              "raw": "{{base_url}}/api/products?page=1&limit=10",
               "host": ["{{base_url}}"],
               "path": ["api", "products"],
               "query": [
@@ -312,40 +211,6 @@
                 {
                   "key": "limit",
                   "value": "10"
-                },
-                {
-                  "key": "sort",
-                  "value": "price_asc"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Search Products",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/products/search?q=action&category=1&min_price=10&max_price=100",
-              "host": ["{{base_url}}"],
-              "path": ["api", "products", "search"],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "action"
-                },
-                {
-                  "key": "category",
-                  "value": "1"
-                },
-                {
-                  "key": "min_price",
-                  "value": "10"
-                },
-                {
-                  "key": "max_price",
-                  "value": "100"
                 }
               ]
             }
@@ -364,63 +229,55 @@
           }
         },
         {
-          "name": "Get Bestseller Products",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/products/bestsellers",
-              "host": ["{{base_url}}"],
-              "path": ["api", "products", "bestsellers"]
-            }
-          }
-        },
-        {
           "name": "Get Product by Slug",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/products/slug/sample-action-game",
+              "raw": "{{base_url}}/api/products/slug/{{product_slug}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "products", "slug", "sample-action-game"]
+              "path": ["api", "products", "slug", "{{product_slug}}"]
             }
           }
         },
         {
-          "name": "Get Product Reviews",
+          "name": "Search Products",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/products/1/reviews?page=1&limit=5&sort=newest",
+              "raw": "{{base_url}}/api/products/search?q=gaming&category=1&min_price=10&max_price=100",
               "host": ["{{base_url}}"],
-              "path": ["api", "products", "1", "reviews"],
+              "path": ["api", "products", "search"],
               "query": [
                 {
-                  "key": "page",
+                  "key": "q",
+                  "value": "gaming"
+                },
+                {
+                  "key": "category",
                   "value": "1"
                 },
                 {
-                  "key": "limit",
-                  "value": "5"
+                  "key": "min_price",
+                  "value": "10"
                 },
                 {
-                  "key": "sort",
-                  "value": "newest"
+                  "key": "max_price",
+                  "value": "100"
                 }
               ]
             }
           }
         },
         {
-          "name": "Add Product to Wishlist",
+          "name": "Create Product (Admin)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
+                "value": "Bearer {{admin_token}}"
               },
               {
                 "key": "Content-Type",
@@ -429,31 +286,29 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_id\": 1\n}"
+              "raw": "{\n  \"name\": \"Gaming Mouse Pro\",\n  \"description\": \"High-performance gaming mouse with RGB lighting\",\n  \"price\": 79.99,\n  \"category_id\": 1,\n  \"subcategory_id\": 1,\n  \"sku\": \"GM-PRO-001\",\n  \"stock_quantity\": 50,\n  \"is_featured\": true,\n  \"tags\": [\"gaming\", \"mouse\", \"rgb\"]\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/products/1/wishlist",
+              "raw": "{{base_url}}/api/products",
               "host": ["{{base_url}}"],
-              "path": ["api", "products", "1", "wishlist"]
+              "path": ["api", "products"]
             }
-          }
-        },
-        {
-          "name": "Remove Product from Wishlist",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('product_id', response.data.id);",
+                  "    pm.environment.set('product_slug', response.data.slug);",
+                  "    console.log('Product created successfully');",
+                  "}"
+                ]
               }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/products/1/wishlist",
-              "host": ["{{base_url}}"],
-              "path": ["api", "products", "1", "wishlist"]
             }
-          }
+          ]
         }
       ]
     },
@@ -478,7 +333,7 @@
           }
         },
         {
-          "name": "Add Item to Cart",
+          "name": "Add to Cart",
           "request": {
             "method": "POST",
             "header": [
@@ -493,14 +348,28 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 2\n}"
+              "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": 2\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/cart/items",
               "host": ["{{base_url}}"],
               "path": ["api", "cart", "items"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('cart_item_id', response.data.id);",
+                  "    console.log('Item added to cart successfully');",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Update Cart Item",
@@ -521,43 +390,9 @@
               "raw": "{\n  \"quantity\": 3\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/cart/items/1",
+              "raw": "{{base_url}}/api/cart/items/{{cart_item_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "cart", "items", "1"]
-            }
-          }
-        },
-        {
-          "name": "Remove Item from Cart",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/cart/items/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "cart", "items", "1"]
-            }
-          }
-        },
-        {
-          "name": "Clear Cart",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/cart",
-              "host": ["{{base_url}}"],
-              "path": ["api", "cart"]
+              "path": ["api", "cart", "items", "{{cart_item_id}}"]
             }
           }
         },
@@ -577,9 +412,14 @@
               "path": ["api", "cart", "summary"]
             }
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "📋 Orders",
+      "item": [
         {
-          "name": "Apply Coupon",
+          "name": "Create Order",
           "request": {
             "method": "POST",
             "header": [
@@ -594,89 +434,60 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"coupon_code\": \"WELCOME10\"\n}"
+              "raw": "{\n  \"items\": [\n    {\n      \"product_id\": {{product_id}},\n      \"quantity\": 1\n    }\n  ],\n  \"shipping_address_id\": 1,\n  \"payment_method_id\": 1\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/cart/coupon",
+              "raw": "{{base_url}}/api/orders",
               "host": ["{{base_url}}"],
-              "path": ["api", "cart", "coupon"]
+              "path": ["api", "orders"]
             }
-          }
-        }
-      ]
-    },
-    {
-      "name": "📋 Categories",
-      "item": [
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('order_id', response.data.id);",
+                  "    console.log('Order created successfully');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
         {
-          "name": "Get All Categories",
+          "name": "Get User Orders",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/categories",
+              "raw": "{{base_url}}/api/orders",
               "host": ["{{base_url}}"],
-              "path": ["api", "categories"]
+              "path": ["api", "orders"]
             }
           }
         },
         {
-          "name": "Get Category by ID",
+          "name": "Get Order Details",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/categories/1",
+              "raw": "{{base_url}}/api/orders/{{order_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "categories", "1"]
-            }
-          }
-        },
-        {
-          "name": "Get Category by Slug",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/categories/slug/action-games",
-              "host": ["{{base_url}}"],
-              "path": ["api", "categories", "slug", "action-games"]
-            }
-          }
-        },
-        {
-          "name": "Get All Subcategories",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/categories/subcategories",
-              "host": ["{{base_url}}"],
-              "path": ["api", "categories", "subcategories"]
-            }
-          }
-        },
-        {
-          "name": "Get Subcategory by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/categories/subcategories/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "categories", "subcategories", "1"]
-            }
-          }
-        },
-        {
-          "name": "Get Subcategory by Slug",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/categories/subcategories/slug/first-person-shooters",
-              "host": ["{{base_url}}"],
-              "path": ["api", "categories", "subcategories", "slug", "first-person-shooters"]
+              "path": ["api", "orders", "{{order_id}}"]
             }
           }
         }
@@ -691,35 +502,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/reviews/product/1?page=1&limit=10&sort=newest",
+              "raw": "{{base_url}}/api/reviews/product/{{product_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "product", "1"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                },
-                {
-                  "key": "sort",
-                  "value": "newest"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Review Statistics",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/reviews/product/1/stats",
-              "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "product", "1", "stats"]
+              "path": ["api", "reviews", "product", "{{product_id}}"]
             }
           }
         },
@@ -739,23 +524,54 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_id\": 1,\n  \"rating\": 5,\n  \"title\": \"Amazing Game!\",\n  \"comment\": \"This is one of the best games I've ever played. Highly recommended!\"\n}"
+              "raw": "{\n  \"rating\": 5,\n  \"title\": \"Amazing Gaming Mouse!\",\n  \"comment\": \"This mouse is perfect for gaming. Great precision and RGB lighting.\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/reviews/product/1",
+              "raw": "{{base_url}}/api/reviews/product/{{product_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "product", "1"]
+              "path": ["api", "reviews", "product", "{{product_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('review_id', response.data.id);",
+                  "    console.log('Review created successfully');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📂 Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
             }
           }
         },
         {
-          "name": "Update Review",
+          "name": "Create Category (Admin)",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
+                "value": "Bearer {{admin_token}}"
               },
               {
                 "key": "Content-Type",
@@ -764,70 +580,152 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rating\": 4,\n  \"title\": \"Great Game!\",\n  \"comment\": \"Updated review - still a great game!\"\n}"
+              "raw": "{\n  \"name\": \"Gaming Accessories\",\n  \"description\": \"High-quality gaming accessories and peripherals\",\n  \"is_active\": true\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/reviews/1",
+              "raw": "{{base_url}}/api/categories",
               "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "1"]
+              "path": ["api", "categories"]
             }
-          }
-        },
-        {
-          "name": "Delete Review",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('category_id', response.data.id);",
+                  "    console.log('Category created successfully');",
+                  "}"
+                ]
               }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/reviews/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "1"]
             }
-          }
-        },
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Inventory Management",
+      "item": [
         {
-          "name": "Like Review",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/reviews/1/like",
-              "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "1", "like"]
-            }
-          }
-        },
-        {
-          "name": "Get User Reviews",
+          "name": "Get Product Inventory History",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
+                "value": "Bearer {{admin_token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/reviews/user?page=1&limit=10",
+              "raw": "{{base_url}}/api/inventory/product/{{product_id}}/history",
               "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "user"],
+              "path": ["api", "inventory", "product", "{{product_id}}", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Recent Inventory Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/inventory/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "inventory", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Add Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": 25,\n  \"unit_cost\": 45.00,\n  \"notes\": \"Restocking from supplier\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/inventory/add-stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "inventory", "add-stock"]
+            }
+          }
+        },
+        {
+          "name": "Adjust Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": -5,\n  \"reason\": \"Damaged items removed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/inventory/adjust-stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "inventory", "adjust-stock"]
+            }
+          }
+        },
+        {
+          "name": "Get Inventory Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/inventory/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "inventory", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Low Stock Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/inventory/low-stock?threshold=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "inventory", "low-stock"],
               "query": [
                 {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
+                  "key": "threshold",
                   "value": "10"
                 }
               ]
@@ -837,109 +735,10 @@
       ]
     },
     {
-      "name": "📦 Orders",
+      "name": "👨‍💼 Admin Dashboard",
       "item": [
         {
-          "name": "Create Order",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"shipping_address\": {\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"address_line1\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"postal_code\": \"10001\",\n    \"country\": \"US\",\n    \"phone\": \"+1234567890\"\n  },\n  \"billing_address\": {\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"address_line1\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"postal_code\": \"10001\",\n    \"country\": \"US\"\n  },\n  \"payment_method\": {\n    \"type\": \"card\",\n    \"card_number\": \"4242424242424242\",\n    \"expiry_month\": \"12\",\n    \"expiry_year\": \"2025\",\n    \"cvc\": \"123\"\n  },\n  \"notes\": \"Please deliver during business hours\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/orders",
-              "host": ["{{base_url}}"],
-              "path": ["api", "orders"]
-            }
-          }
-        },
-        {
-          "name": "Get User Orders",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/orders?page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["api", "orders"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Order by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/orders/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "orders", "1"]
-            }
-          }
-        },
-        {
-          "name": "Cancel Order",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"Changed my mind\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/orders/1/cancel",
-              "host": ["{{base_url}}"],
-              "path": ["api", "orders", "1", "cancel"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "👑 Admin",
-      "item": [
-        {
-          "name": "Get Dashboard Stats",
+          "name": "Get Dashboard Statistics",
           "request": {
             "method": "GET",
             "header": [
@@ -966,28 +765,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/admin/users?page=1&limit=20&role=buyer",
+              "raw": "{{base_url}}/api/admin/users",
               "host": ["{{base_url}}"],
-              "path": ["api", "admin", "users"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                },
-                {
-                  "key": "role",
-                  "value": "buyer"
-                }
-              ]
+              "path": ["api", "admin", "users"]
             }
           }
         },
         {
-          "name": "Get User Details",
+          "name": "Get All Orders",
           "request": {
             "method": "GET",
             "header": [
@@ -997,65 +782,9 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/admin/users/1",
+              "raw": "{{base_url}}/api/admin/orders",
               "host": ["{{base_url}}"],
-              "path": ["api", "admin", "users", "1"]
-            }
-          }
-        },
-        {
-          "name": "Update User",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"first_name\": \"Updated Name\",\n  \"is_active\": true,\n  \"role\": \"buyer\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/admin/users/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "users", "1"]
-            }
-          }
-        },
-        {
-          "name": "Get All Orders (Admin)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/admin/orders?page=1&limit=20&status=pending",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "orders"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                },
-                {
-                  "key": "status",
-                  "value": "pending"
-                }
-              ]
+              "path": ["api", "admin", "orders"]
             }
           }
         },
@@ -1078,173 +807,65 @@
               "raw": "{\n  \"status\": \"shipped\",\n  \"tracking_number\": \"TRK123456789\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/admin/orders/1/status",
+              "raw": "{{base_url}}/api/admin/orders/{{order_id}}/status",
               "host": ["{{base_url}}"],
-              "path": ["api", "admin", "orders", "1", "status"]
+              "path": ["api", "admin", "orders", "{{order_id}}", "status"]
             }
           }
         },
         {
-          "name": "Create Category",
+          "name": "Get All Reviews (Moderation)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "reviews"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 Background Services",
+      "item": [
+        {
+          "name": "Get Background Service Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/background/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "background", "status"]
+            }
+          }
+        },
+        {
+          "name": "Process Order Manually",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{admin_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Adventure Games\",\n  \"description\": \"Exciting adventure games\",\n  \"slug\": \"adventure-games\",\n  \"sort_order\": 4,\n  \"image_url\": \"https://example.com/adventure.jpg\",\n  \"meta_title\": \"Adventure Games - GameStore\",\n  \"meta_description\": \"Discover amazing adventure games\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/categories",
-              "host": ["{{base_url}}"],
-              "path": ["api", "categories"]
-            }
-          }
-        },
-        {
-          "name": "Create Subcategory",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Open World Adventure\",\n  \"description\": \"Open world adventure games\",\n  \"slug\": \"open-world-adventure\",\n  \"category_id\": 1,\n  \"sort_order\": 2,\n  \"meta_title\": \"Open World Adventure Games\",\n  \"meta_description\": \"Explore vast open worlds\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/categories/subcategories",
-              "host": ["{{base_url}}"],
-              "path": ["api", "categories", "subcategories"]
-            }
-          }
-        },
-        {
-          "name": "Get All Reviews (Admin)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/reviews/admin?page=1&limit=20&status=pending",
+              "raw": "{{base_url}}/api/admin/background/process-order/{{order_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "admin"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                },
-                {
-                  "key": "status",
-                  "value": "pending"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Moderate Review",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"action\": \"approve\",\n  \"reason\": \"Review meets guidelines\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/reviews/admin/1/moderate",
-              "host": ["{{base_url}}"],
-              "path": ["api", "reviews", "admin", "1", "moderate"]
-            }
-          }
-        },
-        {
-          "name": "Get Analytics",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/admin/analytics?period=30&type=sales",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "analytics"],
-              "query": [
-                {
-                  "key": "period",
-                  "value": "30"
-                },
-                {
-                  "key": "type",
-                  "value": "sales"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Activity Logs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/admin/logs?page=1&limit=50&type=all",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "logs"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "50"
-                },
-                {
-                  "key": "type",
-                  "value": "all"
-                }
-              ]
+              "path": ["api", "admin", "background", "process-order", "{{order_id}}"]
             }
           }
         }
@@ -1273,7 +894,7 @@
                 },
                 {
                   "key": "product_id",
-                  "value": "1",
+                  "value": "{{product_id}}",
                   "type": "text"
                 }
               ]
@@ -1284,67 +905,49 @@
               "path": ["api", "upload", "product-image"]
             }
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "🧪 Testing & Health",
+      "item": [
         {
-          "name": "Upload Category Image",
+          "name": "Health Check",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": []
-                },
-                {
-                  "key": "category_id",
-                  "value": "1",
-                  "type": "text"
-                }
-              ]
-            },
+            "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/api/upload/category-image",
+              "raw": "{{base_url}}/health",
               "host": ["{{base_url}}"],
-              "path": ["api", "upload", "category-image"]
+              "path": ["health"]
             }
           }
         },
         {
-          "name": "Upload User Avatar",
+          "name": "Test Rate Limiting",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "avatar",
-                  "type": "file",
-                  "src": []
-                }
-              ]
-            },
+            "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/api/upload/avatar",
+              "raw": "{{base_url}}/api/products",
               "host": ["{{base_url}}"],
-              "path": ["api", "upload", "avatar"]
+              "path": ["api", "products"]
+            }
+          }
+        },
+        {
+          "name": "Test Cache Headers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
             }
           }
         }
       ]
     }
   ]
-} 
+}
